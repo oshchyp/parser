@@ -1,0 +1,14 @@
+{
+  "name": "oshchyp/parser",
+  "type": "library",
+  "minimum-stability": "stable",
+  "autoload": {
+    "psr-4": {
+      "oshchyp\\parser\\": "oshchyp/parser"
+    }
+  },
+  "require": {
+    "php-curl-class/php-curl-class": "^8.3",
+    "sunra/php-simple-html-dom-parser": "^1.5"
+  }
+}
