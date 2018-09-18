@@ -9,16 +9,18 @@
 namespace oshchyp\parser;
 
 use Curl\Curl;
+use Sunra\PhpSimple\HtmlDomParser;
 
 class Parser
 {
 
     public $url;
 
-    public $curlObject;
+    public $pageContent;
 
-    public $pageObject;
+    private $_curlObject;
 
+    private $_pageObject;
 
     public function __construct(array $config = [])
     {
@@ -52,10 +54,10 @@ class Parser
      */
     public function getCurlObject()
     {
-        if ($this->curlObject===null){
-            $this->curlObject = new Curl();
+        if ($this->_curlObject===null){
+            $this->_curlObject = new Curl();
         }
-        return $this->curlObject;
+        return $this->_curlObject;
     }
 
     /**
@@ -63,15 +65,19 @@ class Parser
      */
     public function setCurlObject($curlObject)
     {
-        $this->curlObject = $curlObject;
+        $this->_curlObject = $curlObject;
     }
 
     /**
-     * @return mixed
+     * @return \simplehtmldom_1_5\simple_html_dom
+     * @throws \ErrorException
      */
     public function getPageObject()
     {
-        return $this->pageObject;
+        if ($this->_pageObject === null){
+            $this->_pageObject = HtmlDomParser::str_get_html($this->getPageContent());
+        }
+        return $this->_pageObject;
     }
 
     /**
@@ -79,16 +85,54 @@ class Parser
      */
     public function setPageObject($pageObject)
     {
-        $this->pageObject = $pageObject;
+        $this->_pageObject = $pageObject;
+    }
+
+    /**
+     * @return null
+     * @throws \ErrorException
+     */
+    public function getPageContent()
+    {
+        if ($this->pageContent === null){
+            $this->pageContent = $this->getCurlObject()->response;
+        }
+        return $this->pageContent;
+    }
+
+    /**
+     * @param mixed $pageContent
+     */
+    public function setPageContent($pageContent)
+    {
+        $this->pageContent = $pageContent;
+    }
+
+    private function _curlInit(){
+        $this->curlInit();
     }
 
     public function curlInit(){
+        $this->getCurlObject()->get($this->getUrl());
+    }
 
+    public function parse()
+    {
+        $this->_curlInit();
+        $methods = get_class_methods($this);
+        foreach ($methods as $v) {
+            if (strstr($v, 'parsing')) {
+                $this->$v();
+            }
+        }
+        return $this;
     }
 
     public static function getInstance(array $config=[])
     {
         return new static($config);
     }
+
+
 
 }
